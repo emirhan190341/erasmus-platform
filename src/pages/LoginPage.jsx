@@ -22,7 +22,7 @@ const LoginPage = () => {
 	};
 
 	return (
-		<Container maxW={"1200px"} minH={"100vh"} display='flex' alignItems='center'>
+		<Container maxW={"1200px"} minH={"80vh"} display='flex' alignItems='center'>
 			<Stack
 				w='full'
 				direction={{ base: "column", md: "row" }}

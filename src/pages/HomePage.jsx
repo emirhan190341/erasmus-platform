@@ -1,12 +1,10 @@
 import { Button } from "@chakra-ui/react";
 import { Container, Stack, Flex, Heading, Text } from "@chakra-ui/react";
 import { HomeImage } from "../components/HomeImage";
-import Navbar from "../components/ui/Navbar";
 
 const HomePage = () => {
 	return (
 		<Container maxW={"7xl"}>
-			<Navbar />
 			<Stack textAlign={"center"} align={"center"} spacing={{ base: 8, md: 10 }} py={{ base: 20, md: 28 }}>
 				<Heading fontWeight={600} fontSize={{ base: "3xl", sm: "4xl", md: "6xl" }} lineHeight={"110%"}>
 					Erasmus{" "}
