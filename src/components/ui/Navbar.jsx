@@ -14,21 +14,35 @@ import {
 	MenuList,
 	MenuItem,
 } from "@chakra-ui/react";
-import { HamburgerIcon, CloseIcon, ExternalLinkIcon, RepeatIcon, EditIcon } from "@chakra-ui/icons";
-import { Link, Link as RouterLink } from "react-router-dom";
+import { HamburgerIcon, CloseIcon, RepeatIcon, EditIcon } from "@chakra-ui/icons";
+import { Link as RouterLink } from "react-router-dom";
 import { MdLogout } from "react-icons/md";
 import { useAuthState, useSignOut } from "react-firebase-hooks/auth";
 import { auth } from "../../firebase/firebase";
 import { FaUserCircle } from "react-icons/fa";
+import { IoIosCreate } from "react-icons/io";
 
-const Links = ["Dashboard", "Projects", "Team"];
+// const Links = ["Most Asked", "Projects", "Team"];
 
-const NavLink = (props) => {
-	const { children } = props;
+const LINKS = [
+	{
+		name: "Experiences",
+		to: "/experiences",
+	},
+	{
+		name: "Questions",
+		to: "/questions",
+	},
+	{
+		name: "Most Asked",
+		to: "/most-asked",
+	},
+];
 
+const NavLink = ({ link }) => {
 	return (
 		<Box
-			as='a'
+			as={RouterLink}
 			px={2}
 			py={1}
 			rounded={"md"}
@@ -36,9 +50,9 @@ const NavLink = (props) => {
 				textDecoration: "none",
 				bg: useColorModeValue("gray.200", "gray.700"),
 			}}
-			href={"#"}
+			to={link?.to}
 		>
-			{children}
+			{link?.name}
 		</Box>
 	);
 };
@@ -49,8 +63,8 @@ const Navbar = () => {
 	const [user] = useAuthState(auth);
 
 	return (
-		<>
-			<Box bg={useColorModeValue("gray.100", "gray.900")} px={4}>
+		<Box bg={useColorModeValue("gray.100", "gray.900")}>
+			<Box maxW={"container.xl"} mx='auto' px={4}>
 				<Flex h={32} alignItems={"center"} justifyContent={"space-between"}>
 					<IconButton
 						size={"md"}
@@ -60,10 +74,12 @@ const Navbar = () => {
 						onClick={isOpen ? onClose : onOpen}
 					/>
 					<HStack spacing={8} alignItems={"center"}>
-						<Image src='/logo.png' height={70} />
+						<RouterLink to={"/"}>
+							<Image src='/logo.png' height={50} />
+						</RouterLink>
 						<HStack as={"nav"} spacing={4} display={{ base: "none", md: "flex" }}>
-							{Links.map((link) => (
-								<NavLink key={link}>{link}</NavLink>
+							{LINKS.map((link, idx) => (
+								<NavLink key={idx} link={link} />
 							))}
 						</HStack>
 					</HStack>
@@ -77,36 +93,42 @@ const Navbar = () => {
 								mx={3}
 							/> */}
 							<Menu>
-								<MenuButton
-									as={IconButton}
-									bg={"transparent"}
-									borderRadius={"full"}
-									_hover={{ bg: "transparent" }}
-									_focus={{ bg: "transparent" }}
-									_active={{ bg: "transparent" }}
-									aria-label='Options'
-									icon={
-										<Avatar
-											src={
-												"https://images.unsplash.com/photo-1493666438817-866a91353ca9?ixlib=rb-0.3.5&q=80&fm=jpg&crop=faces&fit=crop&h=200&w=200&s=b616b2c5b373a80ffc9636ba24f7a4a9"
-											}
-											mx={3}
-											border={"1px solid"}
-											transition={"transform 0.3s ease"}
-											_hover={{
-												transform: "scale(1.05)",
-											}}
-										/>
-									}
-									border={"none"}
-									variant='outline'
-								/>
+								{user && (
+									<MenuButton
+										as={IconButton}
+										bg={"transparent"}
+										borderRadius={"full"}
+										_hover={{ bg: "transparent" }}
+										_focus={{ bg: "transparent" }}
+										_active={{ bg: "transparent" }}
+										aria-label='Options'
+										icon={
+											<Avatar
+												src={
+													user?.photoURL ||
+													"https://images.unsplash.com/photo-1493666438817-866a91353ca9?ixlib=rb-0.3.5&q=80&fm=jpg&crop=faces&fit=crop&h=200&w=200&s=b616b2c5b373a80ffc9636ba24f7a4a9"
+												}
+												mx={3}
+												border={"1px solid"}
+												transition={"transform 0.3s ease"}
+												_hover={{
+													transform: "scale(1.05)",
+												}}
+											/>
+										}
+										border={"none"}
+										variant='outline'
+									/>
+								)}
 
 								<MenuList>
-									<Link to={`/profile/${user.uid}`}>
+									<RouterLink to={`/profile/${user?.uid}`}>
 										<MenuItem icon={<FaUserCircle size={20} />}>My Profile</MenuItem>
-									</Link>
-									<MenuItem icon={<ExternalLinkIcon />}>New Window</MenuItem>
+									</RouterLink>
+
+									<RouterLink to={`/create`}>
+										<MenuItem icon={<IoIosCreate size={20} />}>Create Post</MenuItem>
+									</RouterLink>
 									<MenuItem icon={<RepeatIcon />}>Open Closed Tab</MenuItem>
 									<MenuItem icon={<EditIcon />}>Open File...</MenuItem>
 								</MenuList>
@@ -130,14 +152,14 @@ const Navbar = () => {
 				{isOpen ? (
 					<Box pb={4} display={{ md: "none" }}>
 						<Stack as={"nav"} spacing={4}>
-							{Links.map((link) => (
-								<NavLink key={link}>{link}</NavLink>
+							{LINKS.map((link) => (
+								<NavLink key={link.name} link={link} />
 							))}
 						</Stack>
 					</Box>
 				) : null}
 			</Box>
-		</>
+		</Box>
 	);
 };
 export default Navbar;
@@ -154,10 +176,10 @@ function NavbarAuthLinks() {
 				fontSize={"sm"}
 				fontWeight={600}
 				color={"white"}
-				bg={"pink.400"}
+				bg={"blue.400"}
 				to={"/signup"}
 				_hover={{
-					bg: "pink.300",
+					bg: "blue.300",
 				}}
 			>
 				Sign Up
