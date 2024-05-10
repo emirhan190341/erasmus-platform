@@ -37,6 +37,10 @@ const LINKS = [
 		name: "Most Asked",
 		to: "/most-asked",
 	},
+	{
+		name: "Messages",
+		to: "/chat",
+	},
 ];
 
 const NavLink = ({ link }) => {
