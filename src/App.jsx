@@ -12,6 +12,7 @@ import CreatePostPage from "./pages/create/CreatePostPage";
 import ExperiencesPage from "./pages/experiences/ExperiencesPage";
 import QuestionsPage from "./pages/questions/QuestionsPage";
 import { Toaster } from "react-hot-toast";
+import ChatPage from "./pages/chat/ChatPage";
 
 function App() {
 	const [user, loading] = useAuthState(auth);
@@ -31,6 +32,7 @@ function App() {
 				<Route path='/create' element={user ? <CreatePostPage /> : <Navigate to='/login' />} />
 				<Route path='/experiences' element={user ? <ExperiencesPage /> : <Navigate to='/login' />} />
 				<Route path='/questions' element={user ? <QuestionsPage /> : <Navigate to='/login' />} />
+				<Route path='/chat' element={user ? <ChatPage /> : <Navigate to='/login' />} />
 				<Route path='/most-asked' element={<MostAskedPage />} />
 			</Routes>
 			<Toaster />
