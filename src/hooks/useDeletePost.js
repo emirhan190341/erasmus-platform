@@ -4,10 +4,12 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { deleteObject, ref } from "firebase/storage";
+import { usePosts } from "../zustand/usePosts";
 
 const useDeletePost = () => {
 	const [isDeleting, setIsDeleting] = useState(false);
 	const [authUser] = useAuthState(auth);
+	const { setPosts, posts } = usePosts();
 
 	const deletePost = async (post) => {
 		if (!window.confirm("Are you sure you want to delete this post?")) return;
@@ -26,7 +28,8 @@ const useDeletePost = () => {
 				const imageRef = ref(storage, `posts/${authUser.uid}/${post.id}`);
 				await deleteObject(imageRef);
 			}
-
+			const updatedPosts = posts.filter((p) => p.id !== post.id);
+			setPosts(updatedPosts);
 			toast.success("Post deleted successfully");
 		} catch (error) {
 			console.error("Error deleting post: ", error);

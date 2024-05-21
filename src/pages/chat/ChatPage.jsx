@@ -1,19 +1,21 @@
 import { SearchIcon } from "@chakra-ui/icons";
-import { Box, Button, Flex, Input, Text, useColorModeValue } from "@chakra-ui/react";
+import { Box, Button, Flex, Input, Skeleton, SkeletonCircle, Text, useColorModeValue } from "@chakra-ui/react";
 import Conversation from "./Conversation";
 import { GiConversation } from "react-icons/gi";
-// import MessageContainer from "../components/MessageContainer";
 import { useEffect, useState } from "react";
 import MessageContainer from "./MessageContainer";
 import { collection, query, getDocs } from "firebase/firestore";
-import { firestore } from "../../firebase/firebase";
+import { auth, firestore } from "../../firebase/firebase";
 import { useSelectedChat } from "../../zustand/useSelectedChat";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 const ChatPage = () => {
 	const [searchText, setSearchText] = useState("");
 	const [users, setUsers] = useState([]);
+	const [loadingConversations, setLoadingConversations] = useState(true);
 
 	const { selectedChat } = useSelectedChat();
+	const [authUser] = useAuthState(auth);
 
 	useEffect(() => {
 		const getAllUsers = async () => {
@@ -23,90 +25,93 @@ const ChatPage = () => {
 				const querySnapshot = await getDocs(q);
 				const tmpUsers = [];
 				querySnapshot.forEach((doc) => {
-					// doc.data() is never undefined for query doc snapshots
 					tmpUsers.push(doc.data());
 				});
-				setUsers(tmpUsers);
+				// remove the current user from the list
+				const filteredUsers = tmpUsers.filter((user) => user.uid !== authUser.uid);
+				setUsers(filteredUsers);
 			} catch (error) {
 				console.log(error.message);
+			} finally {
+				setLoadingConversations(false);
 			}
 		};
 
 		getAllUsers();
-	}, []);
+	}, [authUser.uid]);
 
 	return (
-		<Box
-			position={"absolute"}
-			left={"50%"}
-			w={{ base: "100%", md: "80%", lg: "1000px" }}
-			p={4}
-			transform={"translateX(-50%)"}
-			border={"1px solid"}
-			mt={20}
-			borderColor={"gray.400"}
-			rounded={"md"}
-		>
+		<Box mx={10}>
 			<Flex
-				gap={4}
-				flexDirection={{ base: "column", md: "row" }}
-				maxW={{
-					sm: "400px",
-					md: "full",
-				}}
+				justifyContent={"center"}
+				alignItems={"center"}
+				maxW={{ base: "100%", md: "80%", lg: "800px" }}
 				mx={"auto"}
+				p={4}
+				border={"2px solid"}
+				my={10}
+				borderColor={"gray.700"}
+				rounded={"md"}
 			>
-				<Flex flex={30} gap={2} flexDirection={"column"} maxW={{ sm: "250px", md: "full" }} mx={"auto"}>
-					<Text fontWeight={700} color={useColorModeValue("gray.600", "gray.400")}>
-						Your Conversations
-					</Text>
-					<form>
-						<Flex alignItems={"center"} gap={2}>
-							<Input placeholder='Search for a user' onChange={(e) => setSearchText(e.target.value)} />
-							<Button size={"sm"}>
-								<SearchIcon />
-							</Button>
-						</Flex>
-					</form>
-
-					{/* {loadingConversations &&
-						[0, 1, 2, 3, 4].map((_, i) => (
-							<Flex key={i} gap={4} alignItems={"center"} p={"1"} borderRadius={"md"}>
-								<Box>
-									<SkeletonCircle size={"10"} />
-								</Box>
-								<Flex w={"full"} flexDirection={"column"} gap={3}>
-									<Skeleton h={"10px"} w={"80px"} />
-									<Skeleton h={"8px"} w={"90%"} />
-								</Flex>
+				<Flex
+					gap={4}
+					flexDirection={{ base: "column", md: "row" }}
+					maxW={{
+						sm: "400px",
+						md: "100%",
+					}}
+					w={"full"}
+					mx={"auto"}
+				>
+					<Flex flex={30} gap={2} flexDirection={"column"} maxW={{ sm: "250px", md: "full" }} mx={"auto"}>
+						<Text fontWeight={700} color={useColorModeValue("gray.600", "gray.400")}>
+							Your Conversations
+						</Text>
+						<form>
+							<Flex alignItems={"center"} gap={2}>
+								<Input
+									placeholder='Search for a user'
+									onChange={(e) => setSearchText(e.target.value)}
+									value={searchText}
+								/>
+								<Button size={"sm"}>
+									<SearchIcon />
+								</Button>
 							</Flex>
-						))} */}
+						</form>
 
-					{users &&
-						users.map((conversation, i) => (
-							<Conversation
-								key={i}
-								// isOnline={onlineUsers.includes(conversation.participants[0]._id)}
-								conversation={conversation}
-							/>
-						))}
-				</Flex>
-				{!selectedChat && (
-					<Flex
-						flex={70}
-						borderRadius={"md"}
-						p={2}
-						flexDir={"column"}
-						alignItems={"center"}
-						justifyContent={"center"}
-						height={"400px"}
-					>
-						<GiConversation size={100} />
-						<Text fontSize={20}>Select a conversation to start messaging</Text>
+						{loadingConversations &&
+							[0, 1, 2, 3, 4].map((_, i) => (
+								<Flex key={i} gap={4} alignItems={"center"} p={"1"} borderRadius={"md"}>
+									<Box>
+										<SkeletonCircle size={"10"} />
+									</Box>
+									<Flex w={"full"} flexDirection={"column"} gap={3}>
+										<Skeleton h={"10px"} w={"80px"} />
+										<Skeleton h={"8px"} w={"90%"} />
+									</Flex>
+								</Flex>
+							))}
+
+						{users && users.map((conversation, i) => <Conversation key={i} conversation={conversation} />)}
 					</Flex>
-				)}
+					{!selectedChat && (
+						<Flex
+							flex={70}
+							borderRadius={"md"}
+							p={2}
+							flexDir={"column"}
+							alignItems={"center"}
+							justifyContent={"center"}
+							height={"400px"}
+						>
+							<GiConversation size={100} />
+							<Text fontSize={20}>Select a conversation to start messaging</Text>
+						</Flex>
+					)}
 
-				{selectedChat && <MessageContainer />}
+					{selectedChat && <MessageContainer />}
+				</Flex>
 			</Flex>
 		</Box>
 	);

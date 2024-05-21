@@ -1,21 +1,7 @@
-import {
-	Flex,
-	Image,
-	Input,
-	InputGroup,
-	InputRightElement,
-	Modal,
-	ModalBody,
-	ModalCloseButton,
-	ModalContent,
-	ModalHeader,
-	ModalOverlay,
-	Spinner,
-	useDisclosure,
-} from "@chakra-ui/react";
+import { Flex, Input, InputGroup, InputRightElement } from "@chakra-ui/react";
 import { useRef, useState } from "react";
 import { IoSendSharp } from "react-icons/io5";
-import { collection, doc, setDoc, arrayUnion, getDoc } from "firebase/firestore";
+import { collection, doc, setDoc, getDoc } from "firebase/firestore";
 
 import { BsFillImageFill } from "react-icons/bs";
 import { auth, firestore } from "../../firebase/firebase";
@@ -40,6 +26,8 @@ const MessageInput = () => {
 				receiverId: selectedChat.uid,
 			});
 
+			setMessageText("");
+
 			// Add a new document with a generated id for conversation
 			const conversationId = `${user.uid}_${selectedChat.uid}`;
 			const conversationRef = doc(firestore, "conversations", conversationId);
@@ -61,8 +49,6 @@ const MessageInput = () => {
 
 			// add conversationId field to the message document
 			await setDoc(newMessage, { conversationId: conversationRef.id }, { merge: true });
-
-			setMessageText("");
 		} catch (error) {
 			console.error("Error adding document: ", error);
 		}

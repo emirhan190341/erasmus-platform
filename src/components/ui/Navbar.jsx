@@ -22,8 +22,6 @@ import { auth } from "../../firebase/firebase";
 import { FaUserCircle } from "react-icons/fa";
 import { IoIosCreate } from "react-icons/io";
 
-// const Links = ["Most Asked", "Projects", "Team"];
-
 const LINKS = [
 	{
 		name: "Experiences",
@@ -148,7 +146,7 @@ const Navbar = () => {
 						>
 							{!user && <NavbarAuthLinks />}
 
-							<MdLogout size={25} onClick={signOut} />
+							{user && <MdLogout size={25} onClick={signOut} />}
 						</Stack>
 					</Flex>
 				</Flex>

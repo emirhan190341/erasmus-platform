@@ -3,13 +3,18 @@ import { Box, Container, Flex, Link, Text, VStack } from "@chakra-ui/layout";
 import { Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/menu";
 import { Portal } from "@chakra-ui/portal";
 import { Button } from "@chakra-ui/react";
-import { useAuthState } from "react-firebase-hooks/auth";
 import { CgMoreO } from "react-icons/cg";
-import { Link as RouterLink } from "react-router-dom";
-import { auth } from "../../firebase/firebase";
+import { Link as RouterLink, useParams } from "react-router-dom";
+
+import useGetUserDoc from "../../hooks/useGetUserDoc";
 
 const ProfilePage = () => {
-	const [user] = useAuthState(auth);
+	const { id: userId } = useParams();
+	const { user } = useGetUserDoc(userId);
+
+	if (!user) {
+		return <Text>Loading...</Text>;
+	}
 
 	return (
 		<Container maxW={"720px"} my={10} bg={"blackAlpha.700"} borderRadius={"lg"} p='10' boxShadow={"md"}>
@@ -17,7 +22,7 @@ const ProfilePage = () => {
 				<Flex justifyContent={"space-between"} w={"full"}>
 					<Box>
 						<Text fontSize={"2xl"} fontWeight={"bold"}>
-							{user.displayName}
+							{user.fullName}
 						</Text>
 						{/* <Flex gap={2} alignItems={"center"}>
               <Text fontSize={"sm"}>emirhan yildirim</Text>
@@ -25,7 +30,7 @@ const ProfilePage = () => {
 					</Box>
 					<Box>
 						<Avatar
-							src={user.photoURL || ""}
+							src={user.profilePicURL || ""}
 							size={{
 								base: "md",
 								md: "xl",

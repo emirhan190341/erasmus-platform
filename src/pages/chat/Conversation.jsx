@@ -1,19 +1,8 @@
-import {
-	Avatar,
-	AvatarBadge,
-	Box,
-	Flex,
-	Image,
-	Stack,
-	Text,
-	WrapItem,
-	useColorMode,
-	useColorModeValue,
-} from "@chakra-ui/react";
+import { Avatar, Box, Flex, Stack, Text, WrapItem, useColorMode, useColorModeValue } from "@chakra-ui/react";
 import { BsCheck2All } from "react-icons/bs";
 import { useSelectedChat } from "../../zustand/useSelectedChat";
 
-const Conversation = ({ conversation, isOnline }) => {
+const Conversation = ({ conversation }) => {
 	const user = conversation;
 	const currentUser = {
 		_id: "1",
@@ -36,10 +25,8 @@ const Conversation = ({ conversation, isOnline }) => {
 				color: "white",
 			}}
 			transition={"all 0.3s"}
-			// bg={
-			// 	selectedConversation?._id === conversation._id ? (colorMode === "light" ? "gray.400" : "gray.dark") : ""
-			// }
-			bg={colorMode === "light" ? "gray.200" : "gray.700"}
+			bg={selectedChat?.uid === conversation.uid ? (colorMode === "light" ? "gray.400" : "gray.700") : ""}
+			// bg={colorMode === "light" ? "gray.200" : "gray.700"}
 			borderRadius={"md"}
 			onClick={() =>
 				setSelectedChat({
@@ -56,9 +43,7 @@ const Conversation = ({ conversation, isOnline }) => {
 						sm: "sm",
 					}}
 					src={user.profilePicURL}
-				>
-					{isOnline ? <AvatarBadge boxSize='1em' bg='green.500' /> : ""}
-				</Avatar>
+				/>
 			</WrapItem>
 
 			<Stack direction={"column"} fontSize={"sm"}>
@@ -73,7 +58,6 @@ const Conversation = ({ conversation, isOnline }) => {
 					) : (
 						""
 					)}
-					merhaba
 				</Text>
 			</Stack>
 		</Flex>

@@ -26,6 +26,8 @@ const GoogleSignIn = () => {
 					fullName: newUser.user.displayName,
 					bio: "",
 					profilePicURL: newUser.user.photoURL,
+					likedPosts: [],
+					bookmarks: [],
 					followers: [],
 					following: [],
 					posts: [],
