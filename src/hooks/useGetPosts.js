@@ -1,6 +1,7 @@
 import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { firestore } from "../firebase/firebase";
+import { usePosts } from "../zustand/usePosts";
 
 const fetchUser = async (userId) => {
 	const userDocRef = doc(firestore, "users", userId);
@@ -13,14 +14,15 @@ const fetchUser = async (userId) => {
 };
 
 const useGetPosts = (postType) => {
-	const [posts, setPosts] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState(null);
+	const { posts, setPosts } = usePosts();
 
 	useEffect(() => {
 		const getPosts = async () => {
 			setIsLoading(true);
 			setError(null);
+			setPosts([]); // Clear the posts array
 			try {
 				const q = query(collection(firestore, "posts"), where("postType", "==", postType));
 
@@ -47,10 +49,10 @@ const useGetPosts = (postType) => {
 		};
 
 		getPosts();
-	}, [postType]);
+	}, [postType, setPosts]);
 	console.log("getPosts called", posts);
 
-	return { posts, isLoading, error };
+	return { posts, isLoading, error, setPosts };
 };
 
 export default useGetPosts;

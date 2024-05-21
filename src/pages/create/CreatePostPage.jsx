@@ -71,7 +71,7 @@ const CreatePostPage = () => {
 				studyType: inputs.studyType,
 				country: inputs.country,
 				university: inputs.university,
-				likes: [],
+				likes: 0,
 				comments: [],
 				bookmarks: 0,
 				createdAt: new Date(),

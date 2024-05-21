@@ -1,161 +1,75 @@
-import { Avatar, Divider, Flex, Image, Skeleton, SkeletonCircle, Text, useColorModeValue } from "@chakra-ui/react";
+import { Avatar, Divider, Flex, Skeleton, SkeletonCircle, Text, useColorModeValue } from "@chakra-ui/react";
 import Message from "./Message";
 import MessageInput from "./MessageInput";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelectedChat } from "../../zustand/useSelectedChat";
-import { collection, getDocs, onSnapshot, query, where } from "firebase/firestore";
+import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import { auth, firestore } from "../../firebase/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
+import toast from "react-hot-toast";
+import useChatScroll from "../../hooks/useChatScroll";
 
 const MessageContainer = () => {
 	const [loadingMessages, setLoadingMessages] = useState(false);
-	const currentUser = {
-		_id: "1",
-		username: "Emirhan Yildirim",
-		email: "dasa@ss.com",
-	};
 
 	const [user] = useAuthState(auth);
-	const messageEndRef = useRef(null);
 
-	const { selectedChat, setSelectedChat } = useSelectedChat();
+	const { selectedChat } = useSelectedChat();
 	const [messages, setMessages] = useState([]);
-
-	// const messages = [
-	// 	{
-	// 		_id: "1",
-	// 		sender: "1",
-	// 		text: "Hello",
-	// 		createdAt: new Date(),
-	// 	},
-	// 	{
-	// 		_id: "2",
-	// 		sender: "2",
-	// 		text: "Hi",
-	// 		createdAt: new Date(),
-	// 	},
-	// 	{
-	// 		_id: "3",
-	// 		sender: "1",
-	// 		text: "How are you?",
-	// 		createdAt: new Date(),
-	// 	},
-	// 	{
-	// 		_id: "4",
-	// 		sender: "2",
-	// 		text: "I'm fine",
-	// 		createdAt: new Date(),
-	// 	},
-	// 	{
-	// 		_id: "5",
-	// 		sender: "1",
-	// 		text: "Good to hear that",
-	// 		createdAt: new Date(),
-	// 	},
-	// 	{
-	// 		_id: "6",
-	// 		sender: "2",
-	// 		text: "How about you?",
-	// 		createdAt: new Date(),
-	// 	},
-	// 	{
-	// 		_id: "7",
-	// 		sender: "1",
-	// 		text: "I'm fine too",
-	// 		createdAt: new Date(),
-	// 	},
-	// 	{
-	// 		_id: "8",
-	// 		sender: "2",
-	// 		text: "What are you doing?",
-	// 		createdAt: new Date(),
-	// 	},
-	// 	{
-	// 		_id: "9",
-	// 		sender: "1",
-	// 		text: "I'm working",
-	// 		createdAt: new Date(),
-	// 	},
-	// 	{
-	// 		_id: "10",
-	// 		sender: "2",
-	// 		text: "Good luck",
-	// 		createdAt: new Date(),
-	// 	},
-	// ];
-
-	// useEffect(() => {
-	// 	const getMessages = async () => {
-	// 		try {
-	// 			// 1 => get conversation between current and the other user
-	// 			// 2 => fetch all messages between these users and listen for new messages
-	// 			const q = query(collection(firestore, "messages"), where("state", "==", "CA"));
-	// 			const unsubscribe = onSnapshot(q, (querySnapshot) => {
-	// 				const msgs = [];
-	// 				querySnapshot.forEach((doc) => {
-	// 					msgs.push({ id: doc.id, ...doc.data() });
-	// 				});
-	// 				console.log(msgs);
-	// 			});
-	// 		} catch (error) {
-	// 			console.log(error.message);
-	// 		}
-	// 	};
-	// 	getMessages();
-	// }, []);
+	const messageContainerRef = useChatScroll(messages);
 
 	useEffect(() => {
-		let unsubscribe; // Declare unsubscribe variable outside the try block
-
 		const getMessages = async () => {
 			try {
-				// Step 1: Get conversation between current user and other user
-				const currentUserID = user.uid;
-				const otherUserID = selectedChat.uid;
+				console.log("called");
 
-				// Query conversations collection based on the concatenated participant IDs
-				const conversationQuery = query(
-					collection(firestore, "conversations"),
-					where("participants", "==", [currentUserID, otherUserID].sort())
+				// Query for messages sent by the current user to the selected user
+				const q1 = query(
+					collection(firestore, "messages"),
+					where("senderId", "==", user.uid),
+					where("receiverId", "==", selectedChat.uid),
+					orderBy("createdAt", "asc") // Order messages by timestamp in ascending order
 				);
 
-				const conversationSnapshot = await getDocs(conversationQuery);
-				if (!conversationSnapshot.empty) {
-					const conversationDoc = conversationSnapshot.docs[0];
-					const conversationID = conversationDoc.id;
+				// Query for messages sent by the selected user to the current user
+				const q2 = query(
+					collection(firestore, "messages"),
+					where("senderId", "==", selectedChat.uid),
+					where("receiverId", "==", user.uid),
+					orderBy("createdAt", "asc") // Order messages by timestamp in ascending order
+				);
 
-					// Step 2: Fetch all messages in the conversation and listen for new messages
-					const messagesQuery = query(
-						collection(firestore, "messages"),
-						where("conversationId", "==", conversationID)
-					);
-					unsubscribe = onSnapshot(messagesQuery, (querySnapshot) => {
-						const msgs = [];
-						querySnapshot.forEach((doc) => {
-							console.log("message is here", doc.data());
-							msgs.push({ id: doc.id, ...doc.data() });
-						});
-						// sort messages by createdAt timestamp
-						msgs.sort((a, b) => a.createdAt - b.createdAt);
-						setMessages(msgs);
-						console.log(msgs);
+				const unsubscribe1 = onSnapshot(q1, (querySnapshot1) => {
+					const msgs1 = [];
+					querySnapshot1.forEach((doc) => {
+						msgs1.push({ id: doc.id, ...doc.data() });
 					});
-				} else {
-					setMessages([]);
-				}
+
+					// Combine messages from both queries
+					const unsubscribe2 = onSnapshot(q2, (querySnapshot2) => {
+						const msgs2 = [];
+						querySnapshot2.forEach((doc) => {
+							msgs2.push({ id: doc.id, ...doc.data() });
+						});
+
+						// Merge both arrays and sort by createdAt
+						const allMsgs = [...msgs1, ...msgs2].sort((a, b) => a.createdAt - b.createdAt);
+						setMessages(allMsgs);
+					});
+
+					// Clean up the second subscription
+					return () => unsubscribe2();
+				});
+
+				setLoadingMessages(false);
+
+				// Clean up the first subscription
+				return () => unsubscribe1();
 			} catch (error) {
-				console.log(error.message);
+				toast.error(error.message);
 			}
 		};
-
 		getMessages();
-
-		// Cleanup function to unsubscribe from snapshot listener
-		return () => {
-			if (unsubscribe) {
-				unsubscribe();
-			}
-		};
 	}, [selectedChat.uid, user.uid]);
 
 	return (
@@ -171,13 +85,13 @@ const MessageContainer = () => {
 				<Avatar src={selectedChat.profilePicURL} size={"sm"} />
 
 				<Text display={"flex"} alignItems={"center"}>
-					{selectedChat.fullName} <Image src='/verified.png' w={4} h={4} ml={1} />
+					{selectedChat.fullName}
 				</Text>
 			</Flex>
 
 			<Divider />
 
-			<Flex flexDir={"column"} gap={4} my={4} p={2} height={"400px"} overflowY={"auto"}>
+			<Flex flexDir={"column"} gap={4} my={4} p={2} height={"400px"} overflowY={"auto"} ref={messageContainerRef}>
 				{loadingMessages &&
 					[...Array(5)].map((_, i) => (
 						<Flex
@@ -199,13 +113,9 @@ const MessageContainer = () => {
 					))}
 
 				{!loadingMessages &&
-					messages.map((message) => (
-						<Flex
-							key={message._id}
-							direction={"column"}
-							ref={messages.length - 1 === messages.indexOf(message) ? messageEndRef : null}
-						>
-							<Message message={message} ownMessage={currentUser._id === message.sender} />
+					messages.map((message, idx) => (
+						<Flex key={idx} direction={"column"}>
+							<Message message={message} ownMessage={user.uid === message.senderId} />
 						</Flex>
 					))}
 			</Flex>
