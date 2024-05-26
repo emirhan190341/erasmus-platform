@@ -16,10 +16,11 @@ import {
 	Stack,
 	Text,
 	Textarea,
+	useColorModeValue,
 } from "@chakra-ui/react";
 import { useRef, useState } from "react";
 import { FaRegImage } from "react-icons/fa6";
-import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
+import { addDoc, arrayUnion, collection, doc, updateDoc } from "firebase/firestore";
 import { auth, firestore, storage } from "../../firebase/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
@@ -92,6 +93,13 @@ const CreatePostPage = () => {
 					image: imgURL,
 				});
 			}
+
+			// add post to user's posts
+			const userRef = doc(firestore, "users", user.uid);
+			await updateDoc(userRef, {
+				posts: arrayUnion(newPost.id),
+			});
+
 			toast.success("Post created successfully");
 			navigate("/" + inputs.postType + "s");
 		} catch (error) {
@@ -108,11 +116,19 @@ const CreatePostPage = () => {
 			<Divider my={2} />
 
 			<Flex gap='10' alignItems={"start"} flexWrap={"wrap"}>
-				<Flex flexDir={"column"} gap='4' flex={1} borderRadius={"4px"} bg={"black"} p={5}>
+				<Flex
+					flexDir={"column"}
+					gap='4'
+					flex={1}
+					borderRadius={"4px"}
+					bg={useColorModeValue("gray.200", "gray.900")}
+					p={5}
+				>
 					<Input
 						placeholder='Title'
 						value={inputs.title}
 						onChange={(e) => setInputs({ ...inputs, title: e.target.value })}
+						borderColor={"gray"}
 					/>
 					<Textarea
 						placeholder='Give some details'
@@ -120,6 +136,7 @@ const CreatePostPage = () => {
 						resize={"vertical"}
 						value={inputs.description}
 						onChange={(e) => setInputs({ ...inputs, description: e.target.value })}
+						borderColor={"gray"}
 					/>
 					{/* TODO: REACT DATE-PICKER EKLENECEK */}
 					<Flex gap={10}>
@@ -274,7 +291,7 @@ const CreatePostPage = () => {
 					</Flex>
 					{error && <Text color={"red.400"}>{error}</Text>}
 				</Flex>
-				<Box borderRadius={"4px"} bg={"black"} p={5}>
+				<Box borderRadius={"4px"} p={5}>
 					<Flex gap={3}>
 						<Image src='/logo-noname.png' h={30} w={30} />
 						<Text fontSize={14}>Posting to Erasmus Platform</Text>

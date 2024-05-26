@@ -8,13 +8,14 @@ import { collection, query, getDocs } from "firebase/firestore";
 import { auth, firestore } from "../../firebase/firebase";
 import { useSelectedChat } from "../../zustand/useSelectedChat";
 import { useAuthState } from "react-firebase-hooks/auth";
+import toast from "react-hot-toast";
 
 const ChatPage = () => {
 	const [searchText, setSearchText] = useState("");
 	const [users, setUsers] = useState([]);
 	const [loadingConversations, setLoadingConversations] = useState(true);
 
-	const { selectedChat } = useSelectedChat();
+	const { selectedChat, setSelectedChat } = useSelectedChat();
 	const [authUser] = useAuthState(auth);
 
 	useEffect(() => {
@@ -38,7 +39,24 @@ const ChatPage = () => {
 		};
 
 		getAllUsers();
-	}, [authUser.uid]);
+
+		// cleanup, reset
+		return () => setSelectedChat(null);
+	}, [authUser.uid, setSelectedChat]);
+
+	const handleSearchUser = async (e) => {
+		e.preventDefault();
+		if (searchText.length < 3) return toast.error("Search term must be at least 3 characters long");
+		const searchTerm = searchText.toLowerCase();
+		const searchedUser = users.find((user) => user.fullName.toLowerCase().includes(searchTerm));
+
+		if (searchedUser) {
+			setSelectedChat(searchedUser);
+		} else {
+			toast.error("User not found");
+		}
+		setSearchText("");
+	};
 
 	return (
 		<Box mx={10}>
@@ -67,14 +85,14 @@ const ChatPage = () => {
 						<Text fontWeight={700} color={useColorModeValue("gray.600", "gray.400")}>
 							Your Conversations
 						</Text>
-						<form>
+						<form onSubmit={handleSearchUser}>
 							<Flex alignItems={"center"} gap={2}>
 								<Input
 									placeholder='Search for a user'
 									onChange={(e) => setSearchText(e.target.value)}
 									value={searchText}
 								/>
-								<Button size={"sm"}>
+								<Button size={"sm"} type='submit'>
 									<SearchIcon />
 								</Button>
 							</Flex>

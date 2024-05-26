@@ -21,8 +21,6 @@ const MessageContainer = () => {
 	useEffect(() => {
 		const getMessages = async () => {
 			try {
-				console.log("called");
-
 				// Query for messages sent by the current user to the selected user
 				const q1 = query(
 					collection(firestore, "messages"),

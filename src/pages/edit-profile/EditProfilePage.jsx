@@ -16,6 +16,7 @@ import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { updateProfile } from "firebase/auth";
 
+// TODO => raporda 3.2
 export default function EditProfilePage() {
 	const [user] = useAuthState(auth);
 	const [fullName, setFullName] = useState("");
@@ -51,7 +52,7 @@ export default function EditProfilePage() {
 	};
 
 	return (
-		<Flex align={"center"} justify={"center"} bg={useColorModeValue("gray.50", "gray.800")}>
+		<Flex align={"center"} justify={"center"}>
 			<Stack
 				spacing={4}
 				w={"full"}
@@ -66,7 +67,7 @@ export default function EditProfilePage() {
 					User Profile Edit
 				</Heading>
 				<form onSubmit={handleSubmit}>
-					<FormControl id='userName'>
+					<FormControl id='avatar'>
 						<FormLabel>User Icon</FormLabel>
 						<Stack direction={["column", "row"]} spacing={6}>
 							<Center>

@@ -13,7 +13,7 @@ const fetchUser = async (userId) => {
 	}
 };
 
-const useGetPosts = (postType) => {
+const useGetPosts = (postFilter, queryOperator, postType) => {
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const { posts, setPosts } = usePosts();
@@ -24,10 +24,10 @@ const useGetPosts = (postType) => {
 			setError(null);
 			setPosts([]); // Clear the posts array
 			try {
-				const q = query(collection(firestore, "posts"), where("postType", "==", postType));
+				const q = query(collection(firestore, "posts"), where(postFilter, queryOperator, postType));
 
 				const querySnapshot = await getDocs(q);
-
+				console.log("querySnapshot", querySnapshot.docs);
 				const postsData = [];
 				for (const doc of querySnapshot.docs) {
 					const postData = { id: doc.id, ...doc.data() };
@@ -49,8 +49,7 @@ const useGetPosts = (postType) => {
 		};
 
 		getPosts();
-	}, [postType, setPosts]);
-	console.log("getPosts called", posts);
+	}, [setPosts, postFilter, queryOperator]);
 
 	return { posts, isLoading, error, setPosts };
 };
