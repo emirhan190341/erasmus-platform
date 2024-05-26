@@ -7,13 +7,12 @@ import { useState } from "react";
 import GoogleSignIn from "../components/auth/GoogleSignIn";
 
 const LoginPage = () => {
-	const [signInWithEmailAndPassword, user, loading, error] = useSignInWithEmailAndPassword(auth);
+	const [signInWithEmailAndPassword, , loading] = useSignInWithEmailAndPassword(auth);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		console.log(email, password);
 		try {
 			await signInWithEmailAndPassword(email, password);
 		} catch (err) {

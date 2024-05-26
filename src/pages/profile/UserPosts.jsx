@@ -1,16 +1,20 @@
-import { Container } from "@chakra-ui/react";
+import { Container, Text } from "@chakra-ui/react";
+import { auth } from "../../firebase/firebase";
 import useGetPosts from "../../hooks/useGetPosts";
 import Post from "../../components/post/Post";
 import PostSkeleton from "../../components/skeletons/PostSkeleton";
 
-const ExperiencesPage = () => {
-	const { posts, error, isLoading } = useGetPosts("postType", "==", "experience");
-
+const UserPosts = () => {
+	const { posts, isLoading, error } = useGetPosts("postedBy", "==", auth.currentUser.uid);
 	return (
 		<Container>
+			<Text textAlign={"center"} fontSize={24} text>
+				Posts
+			</Text>
 			{posts.map((post) => (
 				<Post key={post.id} post={post} />
 			))}
+
 			{isLoading && (
 				<>
 					<PostSkeleton />
@@ -23,4 +27,4 @@ const ExperiencesPage = () => {
 		</Container>
 	);
 };
-export default ExperiencesPage;
+export default UserPosts;

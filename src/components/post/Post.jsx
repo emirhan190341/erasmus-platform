@@ -48,10 +48,9 @@ const Post = ({ post }) => {
 	const { onClose, onOpen, isOpen } = useDisclosure();
 
 	const commentRef = useChatScroll(isCommenting);
-
 	return (
-		<Box my={4}>
-			<Flex gap={3}>
+		<Box my={6} border={"1px solid gray"} rounded={"md"}>
+			<Flex gap={3} p={3}>
 				{/* left */}
 				<Wrap>
 					<WrapItem>
@@ -66,13 +65,36 @@ const Post = ({ post }) => {
 						{/* sol */}
 						<Flex gap={1} alignItems={"center"}>
 							<Link to={`/profile/${postedBy.id}`}>
-								<Text>{postedBy.fullName}</Text>
-								<Text color={"gray.500"}>@{postedBy.username}</Text>
+								<Text
+									fontSize={{
+										base: "sm",
+										md: "md",
+									}}
+								>
+									{postedBy.fullName}
+								</Text>
+								<Text
+									color={"gray.500"}
+									fontSize={{
+										base: "xs",
+										md: "md",
+									}}
+								>
+									@{postedBy.username}
+								</Text>
 							</Link>
 							<Box color={"gray.500"}>
-								<GoDotFill size={"10px"} />
+								<GoDotFill size={6} />
 							</Box>
-							<Text color={"gray.500"}>{formatPostDate(post.createdAt)}</Text>
+							<Text
+								color={"gray.500"}
+								fontSize={{
+									base: "xs",
+									md: "md",
+								}}
+							>
+								{formatPostDate(post.createdAt)}
+							</Text>
 						</Flex>
 						{/* sağ */}
 						{amITheOwner && (
@@ -104,7 +126,7 @@ const Post = ({ post }) => {
 							cursor='pointer'
 						>
 							<FaHeart size={20} />
-							<Text>{post.likes}</Text>
+							<Text>{post.likes.length}</Text>
 						</Flex>
 						<Flex gap={1} alignItems={"center"} cursor={"pointer"} onClick={onOpen}>
 							<FaComment size={20} />
@@ -121,7 +143,7 @@ const Post = ({ post }) => {
 			{/* COMMENT MODAL */}
 			<Modal isOpen={isOpen} onClose={onClose} motionPreset='slideInLeft'>
 				<ModalOverlay />
-				<ModalContent bg={"black"} border={"1px solid gray"} maxW={"400px"}>
+				<ModalContent border={"1px solid gray"} maxW={"400px"}>
 					<ModalHeader>Comments</ModalHeader>
 					<ModalCloseButton />
 					<ModalBody pb={6}>

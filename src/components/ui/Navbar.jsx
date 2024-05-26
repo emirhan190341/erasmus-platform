@@ -14,13 +14,14 @@ import {
 	MenuList,
 	MenuItem,
 } from "@chakra-ui/react";
-import { HamburgerIcon, CloseIcon, RepeatIcon, EditIcon } from "@chakra-ui/icons";
+import { HamburgerIcon, CloseIcon } from "@chakra-ui/icons";
 import { Link as RouterLink } from "react-router-dom";
 import { MdLogout } from "react-icons/md";
 import { useAuthState, useSignOut } from "react-firebase-hooks/auth";
 import { auth } from "../../firebase/firebase";
 import { FaUserCircle } from "react-icons/fa";
 import { IoIosCreate } from "react-icons/io";
+import ToggleMode from "./ToggleMode";
 
 const LINKS = [
 	{
@@ -65,7 +66,7 @@ const Navbar = () => {
 	const [user] = useAuthState(auth);
 
 	return (
-		<Box bg={useColorModeValue("gray.100", "gray.900")}>
+		<Box bg={useColorModeValue("gray.400", "gray.900")}>
 			<Box maxW={"container.xl"} mx='auto' px={4}>
 				<Flex h={32} alignItems={"center"} justifyContent={"space-between"}>
 					<IconButton
@@ -77,7 +78,14 @@ const Navbar = () => {
 					/>
 					<HStack spacing={8} alignItems={"center"}>
 						<RouterLink to={"/"}>
-							<Image src='/logo.png' height={50} />
+							<Image
+								src='/logo.png'
+								height={50}
+								display={{
+									base: "none",
+									sm: "block",
+								}}
+							/>
 						</RouterLink>
 						<HStack as={"nav"} spacing={4} display={{ base: "none", md: "flex" }}>
 							{LINKS.map((link, idx) => (
@@ -95,6 +103,8 @@ const Navbar = () => {
 								mx={3}
 							/> */}
 							<Menu>
+								<ToggleMode />
+
 								{user && (
 									<MenuButton
 										as={IconButton}
@@ -131,16 +141,15 @@ const Navbar = () => {
 									<RouterLink to={`/create`}>
 										<MenuItem icon={<IoIosCreate size={20} />}>Create Post</MenuItem>
 									</RouterLink>
-									<MenuItem icon={<RepeatIcon />}>Open Closed Tab</MenuItem>
-									<MenuItem icon={<EditIcon />}>Open File...</MenuItem>
 								</MenuList>
 							</Menu>
 						</Flex>
+
 						<Stack
 							flex={{ base: 1, md: 0 }}
 							justify={"flex-end"}
 							direction={"row"}
-							spacing={6}
+							spacing={3}
 							alignItems={"center"}
 							cursor={"pointer"}
 						>
@@ -169,7 +178,7 @@ export default Navbar;
 function NavbarAuthLinks() {
 	return (
 		<>
-			<Button as={RouterLink} fontSize={"sm"} ml={3} fontWeight={400} variant={"link"} to={"/login"}>
+			<Button as={RouterLink} fontSize={"sm"} ml={3} variant={"outline"} fontWeight={400} to={"/login"}>
 				Sign In
 			</Button>
 			<Button

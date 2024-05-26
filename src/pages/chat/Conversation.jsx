@@ -12,7 +12,7 @@ const Conversation = ({ conversation }) => {
 	const { selectedChat, setSelectedChat } = useSelectedChat();
 
 	const lastMessage = conversation.lastMessage;
-	const colorMode = useColorMode();
+	const { colorMode } = useColorMode();
 
 	return (
 		<Flex
@@ -25,7 +25,7 @@ const Conversation = ({ conversation }) => {
 				color: "white",
 			}}
 			transition={"all 0.3s"}
-			bg={selectedChat?.uid === conversation.uid ? (colorMode === "light" ? "gray.400" : "gray.700") : ""}
+			bg={selectedChat?.uid === conversation.uid ? (colorMode === "light" ? "gray.200" : "gray.700") : ""}
 			// bg={colorMode === "light" ? "gray.200" : "gray.700"}
 			borderRadius={"md"}
 			onClick={() =>

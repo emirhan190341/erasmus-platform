@@ -1,32 +1,67 @@
-import { Flex, Input, InputGroup, InputRightElement } from "@chakra-ui/react";
-import { useRef, useState } from "react";
+import { Flex, Input, InputGroup, InputRightElement, Spinner } from "@chakra-ui/react";
+import { useState } from "react";
 import { IoSendSharp } from "react-icons/io5";
 import { collection, doc, setDoc, getDoc } from "firebase/firestore";
 
-import { BsFillImageFill } from "react-icons/bs";
 import { auth, firestore } from "../../firebase/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useSelectedChat } from "../../zustand/useSelectedChat";
+
+import OpenAI from "openai";
+const apiKey = import.meta.env.VITE_OPEN_AI_API_KEY;
+
+const openai = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
 
 const MessageInput = () => {
 	const [messageText, setMessageText] = useState("");
 	const [user] = useAuthState(auth);
 	const { selectedChat } = useSelectedChat();
-	const imageRef = useRef(null);
+	const [isLoading, setIsLoading] = useState(false);
 
 	const handleSendMessage = async (e) => {
 		e.preventDefault();
+
 		try {
+			setIsLoading(true);
+			const newMessageRef = doc(collection(firestore, "messages"));
+
+			const askedForAI = messageText.startsWith("@gpt");
+
 			// create a message document
-			const newMessage = doc(collection(firestore, "messages"));
-			await setDoc(newMessage, {
+			await setDoc(newMessageRef, {
 				senderId: user.uid,
 				text: messageText,
 				createdAt: new Date(),
 				receiverId: selectedChat.uid,
 			});
-
 			setMessageText("");
+
+			if (askedForAI) {
+				const res = await openai.chat.completions.create({
+					model: "gpt-3.5-turbo", // "gpt-4" also works, but is so slow!
+					messages: [
+						{
+							role: "system",
+							content:
+								"You are a terse bot in a group chat responding to questions with up to 3-sentence answers",
+						},
+						{
+							role: "user",
+							content: messageText,
+						},
+					],
+				});
+				const answerFromAI = res.choices[0].message.content;
+				const newMessageRef = doc(collection(firestore, "messages"));
+
+				await setDoc(newMessageRef, {
+					senderId: user.uid,
+					fromAI: true,
+					text: answerFromAI,
+					createdAt: new Date(),
+					receiverId: selectedChat.uid,
+				});
+			}
 
 			// Add a new document with a generated id for conversation
 			const conversationId = `${user.uid}_${selectedChat.uid}`;
@@ -39,7 +74,7 @@ const MessageInput = () => {
 			}
 
 			// Append the new message ID
-			messagesArray.push(newMessage.id);
+			messagesArray.push(newMessageRef.id);
 
 			// Update conversation document with the new messages array
 			await setDoc(conversationRef, {
@@ -48,9 +83,11 @@ const MessageInput = () => {
 			});
 
 			// add conversationId field to the message document
-			await setDoc(newMessage, { conversationId: conversationRef.id }, { merge: true });
+			await setDoc(newMessageRef, { conversationId: conversationRef.id }, { merge: true });
 		} catch (error) {
 			console.error("Error adding document: ", error);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -63,16 +100,17 @@ const MessageInput = () => {
 						placeholder='Type a message'
 						onChange={(e) => setMessageText(e.target.value)}
 						value={messageText}
+						disabled={isLoading}
 					/>
 					<InputRightElement onClick={handleSendMessage} cursor={"pointer"}>
-						<IoSendSharp />
+						{isLoading ? <Spinner size={"sm"} /> : <IoSendSharp />}
 					</InputRightElement>
 				</InputGroup>
 			</form>
-			<Flex flex={5} cursor={"pointer"}>
+			{/* <Flex flex={5} cursor={"pointer"}>
 				<BsFillImageFill size={20} onClick={() => imageRef.current.click()} />
 				<Input type={"file"} hidden ref={imageRef} />
-			</Flex>
+			</Flex> */}
 			{/* <Modal
 				isOpen={imgUrl}
 				onClose={() => {

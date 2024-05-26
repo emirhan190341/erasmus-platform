@@ -5,7 +5,7 @@ import Post from "../../components/post/Post";
 import PostSkeleton from "../../components/skeletons/PostSkeleton";
 
 const QuestionsPage = () => {
-	const { posts, error, isLoading } = useGetPosts("question");
+	const { posts, error, isLoading } = useGetPosts("postType", "==", "question");
 
 	return (
 		<Container>

@@ -11,9 +11,7 @@ const usePostComment = () => {
 	const postComment = async (post, comment) => {
 		try {
 			setIsCommenting(true);
-			console.log("çağrıldı", post.id);
 			const postRef = doc(firestore, "posts", post.id);
-			console.log(postRef);
 
 			await updateDoc(postRef, {
 				comments: arrayUnion({
